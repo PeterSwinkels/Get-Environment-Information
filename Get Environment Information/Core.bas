@@ -1,4 +1,4 @@
-Attribute VB_Name = "Module1"
+Attribute VB_Name = "CoreModule"
 'This module contains this program's core procedures.
 Option Explicit
 
