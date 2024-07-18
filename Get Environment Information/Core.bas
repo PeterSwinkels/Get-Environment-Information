@@ -17,6 +17,7 @@ Private Const MAX_STRING As Long = 65535             'Defines the maximum allowe
 
 'This procedure retrieves and returns the computer's name.
 Private Function GetComputerName() As String
+On Error GoTo ErrorTrap
 Dim ComputerName As String
 Dim ReturnValue As Long
 
@@ -29,23 +30,36 @@ Dim ReturnValue As Long
       ComputerName = vbNullString
    End If
 
+EndProcedure:
    GetComputerName = ComputerName
+   Exit Function
+   
+ErrorTrap:
+   If HandleError() = vbIgnore Then Resume EndProcedure
+   If HandleError(ReturnPreviousChoice:=True) = vbIgnore Then Resume
 End Function
-'This procedure generates a temporary file name with path using the specified parameters and returns the resulting path.
+'This procedure generates a temporary file name using the specified parameters and returns the result.
 Private Function GetTemporaryFileName(TemporaryPath As String, Prefix As String, Optional UniqueNumber As Long = 0) As String
+On Error GoTo ErrorTrap
 Dim TemporaryFile As String
 Dim UniqueNumberReturned As Long
 
    TemporaryFile = String$(MAX_PATH, vbNullChar)
    UniqueNumberReturned = GetTempFileNameA(TemporaryPath, Prefix, UniqueNumber, TemporaryFile)
-   If InStr(TemporaryFile, vbNullChar) Then TemporaryFile = Left$(TemporaryFile, InStr(TemporaryFile, vbNullChar))
-
-   If Not Right$(TemporaryPath, 1) = "\" Then TemporaryPath = TemporaryPath & "\"
-   GetTemporaryFileName = TemporaryPath & Prefix & Hex$(UniqueNumberReturned)
+   If InStr(TemporaryFile, vbNullChar) Then TemporaryFile = Left$(TemporaryFile, InStr(TemporaryFile, vbNullChar) - 1)
+  
+EndProcedure:
+   GetTemporaryFileName = Prefix & Hex$(UniqueNumberReturned)
+   Exit Function
+   
+ErrorTrap:
+   If HandleError() = vbIgnore Then Resume EndProcedure
+   If HandleError(ReturnPreviousChoice:=True) = vbIgnore Then Resume
 End Function
 
 'This procedure retrieves and returns the temporary file folder's path.
 Private Function GetTemporaryPath() As String
+On Error GoTo ErrorTrap
 Dim Length As Long
 Dim TemporaryPath As String
 
@@ -53,12 +67,19 @@ Dim TemporaryPath As String
    Length = GetTempPathA(Len(TemporaryPath), TemporaryPath)
    If Length > 0 Then TemporaryPath = Left$(TemporaryPath, Length)
 
+EndProcedure:
    GetTemporaryPath = TemporaryPath
+   Exit Function
+   
+ErrorTrap:
+   If HandleError() = vbIgnore Then Resume EndProcedure
+   If HandleError(ReturnPreviousChoice:=True) = vbIgnore Then Resume
 End Function
 
 
 'This procedure retrieves and returns the current user's name.
 Private Function GetUserName() As String
+On Error GoTo ErrorTrap
 Dim Length As Long
 Dim UserName As String
 
@@ -66,18 +87,54 @@ Dim UserName As String
    Length = GetUserNameA(UserName, Len(UserName))
    UserName = Left$(UserName, InStr(UserName, vbNullChar) - 1)
    
+EndProcedure:
    GetUserName = UserName
+   Exit Function
+   
+ErrorTrap:
+   If HandleError() = vbIgnore Then Resume EndProcedure
+   If HandleError(ReturnPreviousChoice:=True) = vbIgnore Then Resume
 End Function
 
 
+
+'This procedure handles any errors that occur.
+Private Function HandleError(Optional ReturnPreviousChoice As Boolean = False) As Long
+Dim Description As String
+Dim ErrorCode As Long
+Static Choice As Long
+
+   Description = Err.Description
+   ErrorCode = Err.Number
+   On Error Resume Next
+   If Not ReturnPreviousChoice Then
+      Choice = MsgBox(Description & "." & vbCr & "Error code: " & CStr(ErrorCode), vbAbortRetryIgnore Or vbDefaultButton2 Or vbExclamation)
+   End If
+   
+   If Choice = vbAbort Then End
+   
+   HandleError = Choice
+End Function
 'This procedure is executed when this program is started.
 Private Sub Main()
+On Error GoTo ErrorTrap
+Dim Information As String
 Dim TemporaryPath As String
-
+   
    TemporaryPath = GetTemporaryPath()
-   Debug.Print "Computer name: "; GetComputerName()
-   Debug.Print "Current user: "; GetUserName()
-   Debug.Print "Temporary File Name: "; GetTemporaryFileName(TemporaryPath, "tmp")
-   Debug.Print "Temporary File Path: "; TemporaryPath
+   
+   Information = "Computer name: " & GetComputerName() & vbCr
+   Information = Information & "Current user: " & GetUserName() & vbCr
+   Information = Information & "Temporary file name: " & GetTemporaryFileName(TemporaryPath, "tmp") & vbCr
+   Information = Information & "Temporary file path: " & TemporaryPath & vbCr
+   
+   MsgBox Information, vbInformation
+   
+EndProcedure:
+   Exit Sub
+   
+ErrorTrap:
+   If HandleError() = vbIgnore Then Resume EndProcedure
+   If HandleError(ReturnPreviousChoice:=True) = vbIgnore Then Resume
 End Sub
 

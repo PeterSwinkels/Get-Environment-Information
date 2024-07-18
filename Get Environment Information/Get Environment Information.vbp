@@ -1,6 +1,6 @@
 Type=Exe
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Module=Module1; Core.bas
+Module=CoreModule; Core.bas
 Startup="Sub Main"
 HelpFile=""
 Title="Get Environment Information"
@@ -10,7 +10,7 @@ HelpContextID="0"
 CompatibleMode="0"
 MajorVer=1
 MinorVer=0
-RevisionVer=0
+RevisionVer=1
 AutoIncrementVer=0
 ServerSupportFiles=0
 VersionComments="This program demonstrates how to use Microsoft Windows API functions to retrieve user environment related information."
